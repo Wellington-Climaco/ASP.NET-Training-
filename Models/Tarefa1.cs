@@ -1,6 +1,6 @@
 ﻿namespace TreinandoApi.Models
 {
-    public class Tarefa
+    public class Tarefa1
     {
         public int Id { get; set; }
 

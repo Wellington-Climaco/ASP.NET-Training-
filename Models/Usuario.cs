@@ -10,6 +10,6 @@
 
         public string password { get; set; }
 
-        public IList<Tarefa> ListaTarefas { get; set; }
+        public IList<Tarefa1> ListaTarefas { get; set; }
     }
 }

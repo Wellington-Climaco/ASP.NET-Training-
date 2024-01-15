@@ -129,3 +129,9 @@ C:\dev\treinandoapi\obj\Debug\net8.0\refint\TreinandoApi.dll
 C:\dev\treinandoapi\obj\Debug\net8.0\TreinandoApi.pdb
 C:\dev\treinandoapi\obj\Debug\net8.0\TreinandoApi.genruntimeconfig.cache
 C:\dev\treinandoapi\obj\Debug\net8.0\ref\TreinandoApi.dll
+C:\dev\TreinandoApi\obj\Debug\net8.0\TreinandoApi.sourcelink.json
+C:\dev\TreinandoApi\bin\Debug\net8.0\Microsoft.OpenApi.dll
+C:\dev\TreinandoApi\bin\Debug\net8.0\Swashbuckle.AspNetCore.Swagger.dll
+C:\dev\TreinandoApi\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+C:\dev\TreinandoApi\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerUI.dll
+C:\dev\TreinandoApi\obj\Debug\net8.0\TreinandoApi.MvcApplicationPartsAssemblyInfo.cs

@@ -56,7 +56,7 @@ namespace TreinandoApi.Controllers
         {
             try
             {
-                var Tarefa = new Tarefa { NomeTarefa = tarefa.NomeTarefa, Descricao = tarefa.Descricao };
+                var Tarefa = new Tarefa1 { NomeTarefa = tarefa.NomeTarefa, Descricao = tarefa.Descricao };
                 await contexto.Tarefas.AddAsync(Tarefa);
                 await contexto.SaveChangesAsync();
                 return Ok(Tarefa);

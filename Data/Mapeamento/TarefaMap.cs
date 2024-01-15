@@ -4,9 +4,9 @@ using TreinandoApi.Models;
 
 namespace TreinandoApi.Data.Mapeamento
 {
-    public class TarefaMap : IEntityTypeConfiguration<Tarefa>
+    public class TarefaMap : IEntityTypeConfiguration<Tarefa1>
     {
-        public void Configure(EntityTypeBuilder<Tarefa> builder)
+        public void Configure(EntityTypeBuilder<Tarefa1> builder)
         {
             builder.ToTable("Tarefa");
 

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+
 using TreinandoApi.Data.Mapeamento;
 using TreinandoApi.Models;
 
@@ -6,12 +7,13 @@ namespace TreinandoApi.Data
 {
     public class DbContexto : DbContext
     {
-        public DbSet<Tarefa>  Tarefas { get; set; }
+        public DbSet<Tarefa1>  Tarefas { get; set; }
         public DbSet<Usuario> Usuarios { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseSqlServer("Server=localhost,1433;Database=DadosTarefa;User ID=sa;Password=1q2w3e4r@#$;TrustServerCertificate=True");           
+        
+        public DbContexto(DbContextOptions<DbContexto> options)
+            : base(options)
+        {           
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

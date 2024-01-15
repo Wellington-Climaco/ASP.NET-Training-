@@ -18,18 +18,31 @@ namespace TreinandoApi.Controllers
         [HttpGet("v1/user")]
         public async Task<IActionResult> ListarTodosUsuarios()
         {
-            var usuarios = _contexto.Usuarios.AsNoTracking().ToList();
-
-            return Ok(usuarios);
+            try
+            {
+                var usuarios = await _contexto.Usuarios.AsNoTracking().Include(x => x.ListaTarefas).Select(x => new ListaPostsUsuario { Id = x.Id, Nome = x.Nome, email = x.email, ListaTarefas = x.ListaTarefas }).ToListAsync();
+                return Ok(usuarios);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Erro interno");
+            }
         }
 
         [HttpGet("v1/user/{Id:int}")]
         public async Task<IActionResult> ListarUmUsuario([FromRoute] int Id)
         {
-            var usuario = _contexto.Usuarios.AsNoTracking().FirstOrDefault(x => x.Id == Id);
-            if (usuario == null) return NotFound("Usuario nao encontrado!!");
+            try
+            {
+                var usuario = await _contexto.Usuarios.AsNoTracking().Include(x => x.ListaTarefas).Select(x => new ListaPostsUsuario { Id = x.Id, Nome = x.Nome, email = x.email, ListaTarefas = x.ListaTarefas }).FirstOrDefaultAsync(x => x.Id == Id);
+                if (usuario == null) return NotFound("Usuario nao encontrado!!");
 
-            return Ok(usuario);
+                return Ok(usuario);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Erro interno");
+            }
         }
 
         [HttpPost("v1/user/create")]
