@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using TreinandoApi.Data;
 using TreinandoApi.Models;
-using TreinandoApi.ViewModels.Tarefa;
+using TreinandoApi.ViewModels.Tarefa2;
 
 namespace TreinandoApi.Controllers
 {
@@ -12,17 +12,25 @@ namespace TreinandoApi.Controllers
     {
 
         [HttpGet("v1/tarefas")]
-        public async Task<IActionResult> ListarTarefas([FromServices] DbContexto contexto)
+        public async Task<IActionResult> ListarTodasTarefas([FromServices] DbContexto contexto)
         {
-                var Tarefas = await contexto.Tarefas.AsNoTracking().Include(x=>x.Usuario).Select(x=> new ListaTarefasViewModel
+            try
+            {
+                var Tarefas = await contexto.Tarefas.AsNoTracking().Include(x => x.Usuario).Select(x => new ListaTarefasViewModel
                 {
                     Id = x.Id,
                     NomeTarefa = x.NomeTarefa,
                     Descricao = x.Descricao,
                     DataCriacao = x.DataCriacao,
                     Usuario = x.Usuario.Nome
-                }) .ToListAsync();
+                }).ToListAsync();
+
                 return Ok(Tarefas);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Erro interno");
+            }
 
         }
 
@@ -52,18 +60,24 @@ namespace TreinandoApi.Controllers
         }
         
         [HttpPost("v1/tarefas/criar")]
-        public async Task<IActionResult> CriarTarefa([FromBody] TarefaViewModel tarefa, [FromServices] DbContexto contexto)
+        public async Task<IActionResult> CriarTarefa([FromBody] CriarTarefasViewModel tarefa, [FromServices] DbContexto contexto)
         {
             try
             {
-                var Tarefa = new Tarefa1 { NomeTarefa = tarefa.NomeTarefa, Descricao = tarefa.Descricao };
+                var IdentificacaoUsuario = await contexto.Usuarios.Include(x=>x.ListaTarefas).FirstOrDefaultAsync(x => x.Id == tarefa.Id_Usuario);
+
+                if (IdentificacaoUsuario == null) return NotFound("seu usuario nao foi encontrado");
+                if (IdentificacaoUsuario.ListaTarefas.Count >= 2) return StatusCode(500,"Usuario já possui duas tarefas pendentes!!");
+                
+                var Tarefa = new Tarefa { NomeTarefa = tarefa.NomeTarefa, Descricao = tarefa.Descricao,Usuario=IdentificacaoUsuario};
+                
                 await contexto.Tarefas.AddAsync(Tarefa);
                 await contexto.SaveChangesAsync();
                 return Ok(Tarefa);
             }
             catch (DbUpdateException ex)
             {
-                return StatusCode(500, "Não foi possivel criar usuario");
+                return StatusCode(500, "Não foi possivel criar Tarefa");
             }
             catch (Exception ex)
             {

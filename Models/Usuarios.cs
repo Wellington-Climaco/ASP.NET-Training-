@@ -1,6 +1,6 @@
 ﻿namespace TreinandoApi.Models
 {
-    public class Usuario
+    public class Usuarios
     {
         public int Id { get; set; }
 
@@ -10,6 +10,6 @@
 
         public string password { get; set; }
 
-        public IList<Tarefa1> ListaTarefas { get; set; }
+        public IList<Tarefa> ListaTarefas { get; set; }
     }
 }

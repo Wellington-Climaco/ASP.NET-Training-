@@ -7,8 +7,8 @@ namespace TreinandoApi.Data
 {
     public class DbContexto : DbContext
     {
-        public DbSet<Tarefa1>  Tarefas { get; set; }
-        public DbSet<Usuario> Usuarios { get; set; }
+        public DbSet<Tarefa>  Tarefas { get; set; }
+        public DbSet<Usuarios> Usuarios { get; set; }
 
         
         public DbContexto(DbContextOptions<DbContexto> options)

@@ -50,7 +50,7 @@ namespace TreinandoApi.Controllers
         {
             try
             {
-                var NovoUser = new Usuario { Nome = usuario.Nome, email = usuario.Email, password = usuario.Password };
+                var NovoUser = new Usuarios { Nome = usuario.Nome, email = usuario.Email, password = usuario.Password };
 
                 await _contexto.Usuarios.AddAsync(NovoUser);
                 await _contexto.SaveChangesAsync();

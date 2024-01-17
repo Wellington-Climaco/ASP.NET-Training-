@@ -16,7 +16,7 @@ namespace TreinandoApi.ViewModels.Usuario
         [JsonIgnore]
         public string password { get; set; }
 
-        public IEnumerable<Tarefa1> ListaTarefas { get; set; }
+        public IEnumerable<Tarefa> ListaTarefas { get; set; }
 
     }
 }

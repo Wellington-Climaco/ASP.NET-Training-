@@ -1,6 +1,6 @@
-﻿namespace TreinandoApi.ViewModels.Tarefa
+﻿namespace TreinandoApi.Models
 {
-    public class ListaTarefasViewModel
+    public class Tarefa
     {
         public int Id { get; set; }
 
@@ -10,7 +10,6 @@
 
         public DateTime DataCriacao { get; set; }
 
-        public string? Usuario { get; set; }
-
+        public Usuarios Usuario { get; set; }
     }
 }
