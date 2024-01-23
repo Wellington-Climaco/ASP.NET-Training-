@@ -2,6 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using TreinandoApi.Data;
 using TreinandoApi.Models;
+using TreinandoApi.Repository;
+using TreinandoApi.Repository.Interface;
 using TreinandoApi.ViewModels.Tarefa2;
 
 namespace TreinandoApi.Controllers
@@ -10,70 +12,49 @@ namespace TreinandoApi.Controllers
 
     public class TarefaController: ControllerBase
     {
+        private readonly ITarefaRepository _TarefaRepository;
 
-        [HttpGet("v1/tarefas")]
-        public async Task<IActionResult> ListarTodasTarefas([FromServices] DbContexto contexto)
+        public TarefaController(ITarefaRepository repository)
         {
-            try
-            {
-                var Tarefas = await contexto.Tarefas.AsNoTracking().Include(x => x.Usuario).Select(x => new ListaTarefasViewModel
-                {
-                    Id = x.Id,
-                    NomeTarefa = x.NomeTarefa,
-                    Descricao = x.Descricao,
-                    DataCriacao = x.DataCriacao,
-                    Usuario = x.Usuario.Nome
-                }).ToListAsync();
-
-                return Ok(Tarefas);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Erro interno");
-            }
-
+            _TarefaRepository = repository;
         }
 
-        [HttpGet("v1/tarefas/{Id:int}")]
-        public async Task <IActionResult> ListarTarefa([FromRoute] int Id, [FromServices] DbContexto contexto)
+        [HttpGet("v1/tarefas")]
+        public async Task<IActionResult> ListaTarefa()
+        {            
+            var tarefas = await _TarefaRepository.BuscarTudo();
+
+            if(tarefas == null) return NotFound("Não existe tarefas pendentes!!");
+            return Ok(tarefas);
+        }
+
+        [HttpGet("v1/tarefas/{id:int}")]
+        public async Task<IActionResult> ListarPorId([FromRoute] int id)
         {
             try
             {
-                var tarefa = await contexto.Tarefas.AsNoTracking().Include(x=>x.Usuario).Select(x=> new ListaTarefasViewModel
-                {
-                    Id = x.Id,
-                    NomeTarefa = x.NomeTarefa,
-                    Descricao = x.Descricao,
-                    DataCriacao = x.DataCriacao,
-                    Usuario = x.Usuario.Nome
-                }).FirstOrDefaultAsync(x => x.Id == Id);
-                                
-                if (tarefa == null) return NotFound("Tarefa nao encontrada!!");
-
+                var tarefa = await _TarefaRepository.BuscarPorId(id);
+                if (tarefa == null) return NotFound("Tarefa não encontrada!!");
                 return Ok(tarefa);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Erro interno");
-
+                return StatusCode(500, "0765X - Erro interno");
             }
         }
-        
-        [HttpPost("v1/tarefas/criar")]
-        public async Task<IActionResult> CriarTarefa([FromBody] CriarTarefasViewModel tarefa, [FromServices] DbContexto contexto)
+
+        [HttpPost("v1/tarefas/criando")]
+        public async Task<IActionResult> CriandoTarefa([FromBody] CriarTarefasViewModel tarefaPersonalizada)
         {
             try
             {
-                var IdentificacaoUsuario = await contexto.Usuarios.Include(x=>x.ListaTarefas).FirstOrDefaultAsync(x => x.Id == tarefa.Id_Usuario);
+                var identificacao = await _TarefaRepository.ValidarUsuario(tarefaPersonalizada);
+                if (identificacao == null) return NotFound("seu usuario nao foi encontrado");
+                if (identificacao.ListaTarefas.Count >= 2) return StatusCode(500, "Usuario ja possui duas tarefas pendentes");
 
-                if (IdentificacaoUsuario == null) return NotFound("seu usuario nao foi encontrado");
-                if (IdentificacaoUsuario.ListaTarefas.Count >= 2) return StatusCode(500,"Usuario já possui duas tarefas pendentes!!");
-                
-                var Tarefa = new Tarefa { NomeTarefa = tarefa.NomeTarefa, Descricao = tarefa.Descricao,Usuario=IdentificacaoUsuario};
-                
-                await contexto.Tarefas.AddAsync(Tarefa);
-                await contexto.SaveChangesAsync();
-                return Ok(Tarefa);
+                var Tarefa = new Tarefa { NomeTarefa = tarefaPersonalizada.NomeTarefa, Descricao = tarefaPersonalizada.Descricao, Usuario = identificacao };
+                var task = await _TarefaRepository.Adicionar(Tarefa, tarefaPersonalizada);
+                return Ok($"Tarefa criada com sucesso!!");
             }
             catch (DbUpdateException ex)
             {
@@ -86,21 +67,17 @@ namespace TreinandoApi.Controllers
             }
         }
 
-        [HttpPut("v1/tarefas/update")]
-        public async Task<IActionResult> AtualizarTarefa([FromBody] TarefaViewModel tarefa, [FromServices] DbContexto contexto)
+        [HttpPut("v1/tarefas/Atualizando")]
+        public async Task<IActionResult> AtualizarTarefas([FromBody]TarefaViewModel tarefaViewModel)
         {
-            var tarefaAtualizada = contexto.Tarefas.FirstOrDefault(x => x.Id == tarefa.Id);
-            if (tarefaAtualizada == null) return NotFound("Tarefa não encontrada!");
-
             try
             {
-                tarefaAtualizada.NomeTarefa = tarefa.NomeTarefa;
-                tarefaAtualizada.Descricao = tarefa.Descricao;
+                var validacao = await _TarefaRepository.BuscarPorId(tarefaViewModel.Id);
+                if (validacao == null) return NotFound($"Tarefa com Id: {tarefaViewModel.Id} não encontrado!!");
 
-                contexto.Update(tarefaAtualizada);
-                await contexto.SaveChangesAsync();
+                var Tarefa = await _TarefaRepository.Atualizar(tarefaViewModel);
 
-                return Ok(tarefaAtualizada);
+                return Ok(Tarefa);
             }
             catch (DbUpdateException ex)
             {
@@ -111,6 +88,18 @@ namespace TreinandoApi.Controllers
                 return StatusCode(500, "Erro interno");
 
             }
+
+
+        }
+
+        [HttpDelete("v1/tarefas/remover/{Id:int}")]
+        public async Task<IActionResult> RemoverTarefa([FromRoute] int Id)
+        {
+            var tarefa = await _TarefaRepository.BuscarPorId(Id);
+            if (tarefa == null) return NotFound("Tarefa não encontrada!!");
+
+            var resultado = await _TarefaRepository.Deletar(tarefa);
+            return Ok(resultado);           
         }
 
         [HttpDelete("v1/tarefas/delete/{id:int}")]

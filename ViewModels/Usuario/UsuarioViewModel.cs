@@ -1,12 +1,12 @@
 ﻿using System.Text.Json.Serialization;
 using TreinandoApi.Models;
-using TreinandoApi.ViewModels.Tarefa;
+using TreinandoApi.ViewModels.Tarefa2;
 
 
 
 namespace TreinandoApi.ViewModels.Usuario
 {
-    public class ListaPostsUsuario
+    public class UsuarioViewModel
     {
         public int Id { get; set; }
 

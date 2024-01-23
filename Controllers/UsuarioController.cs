@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Runtime.Intrinsics;
 using TreinandoApi.Data;
 using TreinandoApi.Models;
+using TreinandoApi.Repository.Interface;
 using TreinandoApi.ViewModels.Usuario;
 
 namespace TreinandoApi.Controllers
@@ -9,109 +11,51 @@ namespace TreinandoApi.Controllers
     [ApiController]
     public class UsuarioController : ControllerBase
     {
-        public readonly DbContexto _contexto;
-        public UsuarioController(DbContexto contexto)
+
+        public readonly IUsuarioRepository _usuarioRepository;
+        public UsuarioController(IUsuarioRepository usuarioRepository)
         {
-            _contexto = contexto;
+            _usuarioRepository = usuarioRepository;
         }
 
-        [HttpGet("v1/user")]
-        public async Task<IActionResult> ListarTodosUsuarios()
+        [HttpGet("v1/usuario/Listar")]
+        public async Task<IActionResult> ListarTodos()
         {
-            try
-            {
-                var usuarios = await _contexto.Usuarios.AsNoTracking().Include(x => x.ListaTarefas).Select(x => new ListaPostsUsuario { Id = x.Id, Nome = x.Nome, email = x.email, ListaTarefas = x.ListaTarefas }).ToListAsync();
-                return Ok(usuarios);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Erro interno");
-            }
+            var usuario = await _usuarioRepository.ListarTudo();
+            return Ok(usuario);
         }
 
-        [HttpGet("v1/user/{Id:int}")]
-        public async Task<IActionResult> ListarUmUsuario([FromRoute] int Id)
+        [HttpGet("v1/usuario/Listar/{Id:int}")]
+        public async Task<IActionResult> ListarPorId([FromRoute] int Id)
         {
-            try
-            {
-                var usuario = await _contexto.Usuarios.AsNoTracking().Include(x => x.ListaTarefas).Select(x => new ListaPostsUsuario { Id = x.Id, Nome = x.Nome, email = x.email, ListaTarefas = x.ListaTarefas }).FirstOrDefaultAsync(x => x.Id == Id);
-                if (usuario == null) return NotFound("Usuario nao encontrado!!");
-
-                return Ok(usuario);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Erro interno");
-            }
+            var usuario = await _usuarioRepository.BuscarPorId(Id);
+            if (usuario == null) return NotFound("Usuário nao encontrado!!");
+            return Ok(usuario);
         }
 
-        [HttpPost("v1/user/create")]
-        public async Task<IActionResult> CriarUsuario([FromBody] CriarUsuarioViewModel usuario)
+        [HttpPost("v1/usuario/criar")]
+        public async Task<IActionResult> Criar([FromBody] CriarUsuarioViewModel usuarioViewModel)
         {
-            try
-            {
-                var NovoUser = new Usuarios { Nome = usuario.Nome, email = usuario.Email, password = usuario.Password };
-
-                await _contexto.Usuarios.AddAsync(NovoUser);
-                await _contexto.SaveChangesAsync();
-
-                return Ok($"Conta criada com sucesso - {NovoUser.Nome}");
-            }
-            catch (DbUpdateException ex)
-            {
-                return StatusCode(500, "Não foi possivel criar usuario");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Erro interno");
-            }
+            if (usuarioViewModel == null) return StatusCode(500, "Algum campo não foi preenchido!!");
+            var usuario = await _usuarioRepository.Criar(usuarioViewModel);
+            return Ok(usuario);            
         }
 
-        [HttpPut("v1/user/update")]
-        public async Task<IActionResult> AtualizarUsuario([FromBody] EditarUsuarioViewModel usuario)
+        [HttpPut("v1/usuario/atualizar")]
+        public async Task<IActionResult> Atualizar([FromBody] EditarUsuarioViewModel usuarioViewModel)
         {
-            var UpdateUser = _contexto.Usuarios.FirstOrDefault(x => x.Id == usuario.Id);
-            if (UpdateUser == null) return NotFound("Usuario nao encontrado");
-            try
-            {
-                UpdateUser.Nome = usuario.nome;
-                UpdateUser.email = usuario.email;
+            await _usuarioRepository.BuscarPorId(usuarioViewModel.Id);
 
-                _contexto.Usuarios.Update(UpdateUser);
-                await _contexto.SaveChangesAsync();
-
-                return Ok($"Atualizado com sucesso!");
-            }
-            catch (DbUpdateException ex)
-            {
-                return StatusCode(500, "Não foi possivel atualizar usuario");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Erro interno");
-            }
-
+            var usuario = await _usuarioRepository.Atualizar(usuarioViewModel);
+            return Ok(usuario);           
         }
 
-        [HttpDelete("v1/user/delete")]
-        public async Task<IActionResult> RemoverUsuario([FromRoute] int Id)
+        [HttpDelete("v1/usuario/remover/{id:int}")]
+        public async Task<IActionResult> Remover([FromRoute] int id)
         {
-            var usuario = _contexto.Usuarios.FirstOrDefault(x => x.Id == Id);
-            if (usuario == null) return NotFound("Usuario nao encontrado");
-
-            try
-            {
-                _contexto.Usuarios.Remove(usuario);
-                await _contexto.SaveChangesAsync();
-                return Ok("Usuario removido!");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Erro interno");
-            }
+            if (await _usuarioRepository.BuscarPorId(id) == null) return NotFound("Usuario não encontrado!!");
+            return Ok(await _usuarioRepository.Remover(id));           
         }
-
-
 
     }
 }

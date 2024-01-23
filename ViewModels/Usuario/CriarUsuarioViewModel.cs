@@ -4,7 +4,6 @@ namespace TreinandoApi.ViewModels.Usuario
 {
     public class CriarUsuarioViewModel
     {
-        public int Id { get; set; }
 
         [Required(ErrorMessage = "Nome do usuário é obrigatório")]
         [Length(3, 30, ErrorMessage = "Tamanho minimo 3 e maximo 30 do nome")]
